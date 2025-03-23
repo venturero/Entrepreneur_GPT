@@ -1,0 +1,503 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, sans-serif;
+    background-color: #212121;
+    color: #ECECF1;
+    line-height: 1.5;
+}
+
+.container {
+    display: flex;
+    height: 100vh;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    left: 0;
+}
+
+/* Sidebar Styles */
+.sidebar {
+    width: 260px;
+    background-color: #171717;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    overflow-y: auto;
+}
+
+.new-chat {
+    margin-bottom: 20px;
+}
+
+#new-chat-btn {
+    width: 100%;
+    padding: 12px;
+    background-color: transparent;
+    border: 1px solid rgba(255,255,255,0.2);
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: background-color 0.3s;
+}
+
+#new-chat-btn:hover {
+    background-color: #2A2B32;
+}
+
+/* Main Content Styles */
+.main-content {
+    flex-grow: 1;
+    margin-left: 260px;
+    height: 100vh;
+    overflow-y: auto;
+}
+
+.chat-container {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    max-width: 800px;
+    margin: 0 auto;
+    width: 100%;
+    position: relative;
+}
+
+.chat-messages {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 20px;
+    scroll-behavior: smooth;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-messages:empty {
+    display: none;
+}
+
+.welcome-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: calc(100vh - 200px); /* Adjust for input box height */
+    text-align: center;
+}
+
+.welcome-title {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: #ECECF1;
+}
+
+.welcome-message {
+    text-align: center;
+    margin-top: 20vh;
+}
+
+.welcome-message h1 {
+    font-size: 2em;
+    margin-bottom: 20px;
+}
+
+.message {
+    padding: 20px;
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+.user-message {
+    background-color: #212121;
+}
+
+.ai-message {
+    background-color: #171717;
+}
+
+/* Input Area Styles */
+.input-container {
+    padding: 20px;
+    position: relative;
+    max-width: 800px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.input-box {
+    position: relative;
+    background-color: #171717;
+    border-radius: 12px;
+    border: 1px solid #2f2f2f;
+    display: flex;
+    align-items: flex-end;
+}
+
+.file-upload-label {
+    padding: 10px;
+    cursor: pointer;
+    color: #ECECF1;
+    display: flex;
+    align-items: center;
+    opacity: 0.7;
+    transition: opacity 0.3s;
+}
+
+.file-upload-label:hover {
+    opacity: 1;
+}
+
+.file-upload-input {
+    display: none;
+}
+
+textarea {
+    width: 100%;
+    padding: 14px 45px 14px 0;
+    border: none;
+    border-radius: 12px;
+    background-color: transparent;
+    color: white;
+    font-size: 1em;
+    resize: none;
+    max-height: 200px;
+    outline: none;
+}
+
+#send-button {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    background-color: transparent;
+    border: none;
+    color: #ECECF1;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+#send-button:hover {
+    background-color: rgba(255,255,255,0.1);
+}
+
+.disclaimer {
+    text-align: center;
+    color: #c5c5d2;
+    font-size: 0.8em;
+    margin-top: 10px;
+}
+
+/* Message Styles */
+.message {
+    display: flex;
+    padding: 20px;
+    gap: 20px;
+}
+
+.message-content {
+    flex-grow: 1;
+}
+
+/* Scrollbar Styles */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #565869;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #666;
+}
+
+/* Add these styles to your existing CSS */
+
+.chat-history {
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.chat-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px;
+    margin-bottom: 4px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #ECECF1;
+    transition: background-color 0.3s;
+}
+
+.chat-item:hover {
+    background-color: #212121;
+}
+
+.chat-item.active {
+    background-color: #212121;
+}
+
+.chat-item i {
+    font-size: 1em;
+    width: 20px;
+}
+
+.chat-item-content {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    overflow: hidden;
+}
+
+.chat-item-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.chat-item-actions {
+    position: relative;
+}
+
+.more-options {
+    background: none;
+    border: none;
+    color: #8e8ea0;
+    padding: 4px 8px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.more-options:hover {
+    color: #ECECF1;
+    background-color: rgba(255,255,255,0.1);
+}
+
+.context-menu {
+    position: absolute;
+    right: 100%;
+    top: 0;
+    background-color: #171717;
+    border: 1px solid #2f2f2f;
+    border-radius: 6px;
+    padding: 4px 0;
+    min-width: 160px;
+    display: none;
+    z-index: 1000;
+}
+
+.context-menu.active {
+    display: block;
+}
+
+.context-menu-item {
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.context-menu-item:hover {
+    background-color: #212121;
+}
+
+.context-menu-item.delete {
+    color: #ff4444;
+}
+
+.context-menu-item i {
+    width: 16px;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    display: none;
+}
+
+.modal-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #171717;
+    padding: 20px;
+    border-radius: 8px;
+    min-width: 300px;
+}
+
+.modal-header {
+    font-size: 1.2em;
+    margin-bottom: 16px;
+    color: #ECECF1;
+}
+
+.modal-input {
+    width: 100%;
+    padding: 8px 12px;
+    margin-bottom: 16px;
+    background-color: #212121;
+    border: 1px solid #2f2f2f;
+    border-radius: 4px;
+    color: #ECECF1;
+    font-size: 1em;
+}
+
+.modal-input:focus {
+    outline: none;
+    border-color: #565869;
+}
+
+.modal-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.modal-button {
+    padding: 8px 16px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background-color 0.3s;
+}
+
+.modal-button.cancel {
+    background-color: #2f2f2f;
+    color: #ECECF1;
+}
+
+.modal-button.cancel:hover {
+    background-color: #3f3f3f;
+}
+
+.modal-button.confirm {
+    background-color: #19c37d;
+    color: white;
+}
+
+.modal-button.confirm:hover {
+    background-color: #15a367;
+}
+
+.file-preview {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    right: 0;
+    padding: 10px;
+    background-color: #40414F;
+    border-radius: 8px;
+    margin-bottom: 5px;
+    display: none;
+}
+
+.file-preview.active {
+    display: block;
+}
+
+.file-preview-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px;
+    background-color: #2A2B32;
+    border-radius: 4px;
+    margin-bottom: 5px;
+}
+
+.file-preview-item span {
+    flex-grow: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.file-preview-item button {
+    background: none;
+    border: none;
+    color: #ECECF1;
+    cursor: pointer;
+    padding: 2px 5px;
+}
+
+.file-preview-item button:hover {
+    color: #ff4444;
+}
+
+/* Message action buttons */
+.message-actions {
+    display: flex;
+    gap: 10px;
+    padding-top: 10px;
+    margin-top: 10px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.action-btn {
+    background: transparent;
+    border: none;
+    color: #8e8ea0;
+    padding: 6px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.action-btn:hover {
+    background-color: rgba(255,255,255,0.1);
+    color: #fff;
+}
+
+.action-btn.active {
+    color: #19c37d;
+}
+
+.like-btn.active {
+    color: #19c37d;
+}
+
+.dislike-btn.active {
+    color: #ff4444;
+}
+
+.copy-btn:hover {
+    color: #2986cc;
+}
+
+.model-switch-btn.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.model-switch-btn.disabled:hover {
+    background-color: transparent;
+    color: #8e8ea0;
+} 
