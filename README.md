@@ -1,4 +1,5 @@
 # ChatGPT Clone
+![image](https://github.com/user-attachments/assets/8e288fd9-9540-47e0-b816-6438e81e836d)
 
 ## Description
 
