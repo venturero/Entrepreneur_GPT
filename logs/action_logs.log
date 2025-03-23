@@ -181,3 +181,23 @@
 2025-03-23 11:18:31,416 - 192.168.1.34 - - [23/Mar/2025 11:18:31] "GET / HTTP/1.1" 200 -
 2025-03-23 11:18:31,439 - 192.168.1.34 - - [23/Mar/2025 11:18:31] "GET /static/style.css HTTP/1.1" 200 -
 2025-03-23 11:18:31,442 - 192.168.1.34 - - [23/Mar/2025 11:18:31] "GET /static/script.js HTTP/1.1" 200 -
+2025-03-23 11:18:42,559 - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.34:5000
+2025-03-23 11:18:42,559 - [33mPress CTRL+C to quit[0m
+2025-03-23 11:18:45,496 - 192.168.1.34 - - [23/Mar/2025 11:18:45] "GET / HTTP/1.1" 200 -
+2025-03-23 11:18:45,568 - 192.168.1.34 - - [23/Mar/2025 11:18:45] "[36mGET /static/style.css HTTP/1.1[0m" 304 -
+2025-03-23 11:18:45,575 - 192.168.1.34 - - [23/Mar/2025 11:18:45] "[36mGET /static/script.js HTTP/1.1[0m" 304 -
+2025-03-23 11:18:49,678 - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-23 11:18:49,721 - {"timestamp": "2025-03-23T11:18:49.721186", "user_message": "hi", "assistant_response": "Hello! How can I assist you today?", "files": []}
+2025-03-23 11:18:49,724 - 192.168.1.34 - - [23/Mar/2025 11:18:49] "POST /chat HTTP/1.1" 200 -
+2025-03-23 11:18:54,300 - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-23 11:18:54,308 - {"timestamp": "2025-03-23T11:18:54.307466", "user_message": "1+1", "assistant_response": "1+1 equals 2.", "files": []}
+2025-03-23 11:18:54,311 - 192.168.1.34 - - [23/Mar/2025 11:18:54] "POST /chat HTTP/1.1" 200 -
+2025-03-23 11:22:33,536 - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-23 11:22:33,546 - {"timestamp": "2025-03-23T11:22:33.546636", "user_message": "rewritw this better:\nThis repo is a ChatGPT clone 100% made with Vibe Coding via cursor. Vibe coding means I didn't write the code by myself. I only wrote prompts to Cursor and Cursor wrote the code. When cursor's code become useless I restored the check point and start again.\n\nTo run this code, you need to create a .env file and write your openai api key there. If you have any questions please ask me.", "assistant_response": "This repository is a ChatGPT clone created entirely using Vibe Coding. Vibe coding involves providing prompts to Cursor, which then generates the code. In the event that Cursor's code is no longer effective, I revert to a previous checkpoint and begin again.\n\nTo execute this code, you must create a .env file and input your OpenAI API key. If you have any questions, feel free to reach out to me.", "files": []}
+2025-03-23 11:22:33,549 - 192.168.1.34 - - [23/Mar/2025 11:22:33] "POST /chat HTTP/1.1" 200 -
+2025-03-23 11:22:50,878 - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-23 11:22:50,878 - {"timestamp": "2025-03-23T11:22:50.878400", "user_message": "write it more understandable", "assistant_response": "Can you please clarify what you would like me to write in a more understandable way?", "files": []}
+2025-03-23 11:22:50,878 - 192.168.1.34 - - [23/Mar/2025 11:22:50] "POST /chat HTTP/1.1" 200 -
