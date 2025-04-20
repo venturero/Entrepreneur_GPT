@@ -1,26 +1,33 @@
-# ChatGPT Clone
+# EntrepreneurGPT
 ![image](https://github.com/user-attachments/assets/8e288fd9-9540-47e0-b816-6438e81e836d)
+
+# EntrepreneurGPT
 
 ## Description
 
-This repository contains a ChatGPT clone developed using Vibe Coding with Cursor. The project leverages OpenAI's powerful language model to provide conversational AI capabilities. The code is generated based on prompts provided to Cursor, which streamlines the development process.
+EntrepreneurGPT is a specialized chatbot designed to answer questions related to entrepreneurship. Developed using Cursor and Claude, it leverages advanced AI capabilities to provide insightful responses. The bot can interpret and deliver answers from CSV and PDF files, with the ability to differentiate between text-based and image-based PDFs for accurate responses.
+
+### Current Version: 2
 
 ## Features
 
-- **Conversational AI**: Engage users in natural language conversations.
-- **Prompt Customization**: Modify the behavior and intelligence of the model through prompts.
-- **Easy Setup**: Simple configuration via a `.env` file to manage API keys.
-- **Delete a Chat**: Users can delete entire chat history.
-- **Like/Dislike a Message**: Users can express their feedback on individual messages.
-- **Copy a Message**: Easily copy messages from the chat for further use.
+- **Entrepreneurship-Focused Chatbot**: Provides responses exclusively on entrepreneurship topics.
+- **Multiformat Document Parsing**: Capable of extracting and interpreting data from CSVs and PDFs.
+- **PDF Content Analysis**: Detects content type in PDFs, whether text-based or image-based, and responds appropriately.
+- **Conversational AI**: Engages users in natural language conversations tailored to entrepreneurship queries.
+- **Prompt Customization**: Allows behavior and intelligence modifications of the model through specific prompts.
+- **Easy Setup**: Manage API keys effortlessly using a simple `.env` configuration file.
+- **Manage Chat Histories**: Users can delete entire chat histories to maintain organized conversations.
+- **User Feedback Options**: Users can like or dislike individual messages to provide feedback on responses.
+- **Message Copy Functionality**: Easily copy chat messages for use elsewhere.
 
 ### Prerequisites
 
-Check the `requirements.txt` file for the necessary Python packages.
+Ensure that you have the required Python packages listed in the `requirements.txt` file.
 
 ### Installation
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/venturero/ChatGPT_Clone.git
-   cd ChatGPT_Clone
+   git clone https://github.com/venturero/EntrepreneurGPT.git
+   cd EntrepreneurGPT
