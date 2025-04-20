@@ -54,11 +54,26 @@ function displayChat(chatId) {
 
 // Create new chat
 function initializeNewChat() {
-    chatMessages.innerHTML = `
-        <div class="welcome-container">
-            <h1 class="welcome-title">What can I help with?</h1>
-        </div>
-    `;
+    chatMessages.innerHTML = '';
+    
+    const welcomeMessage = "This is a chatbot specifically designed for entrepreneurship. You can ask questions and receive answers related to entrepreneurship topics. By default, some documents are already uploaded for your reference, and you also have the option to upload your own documents. Please note that this chatbot focuses exclusively on entrepreneurship, and it will not provide answers to unrelated questions.";
+    
+    // Create welcome message element
+    const welcomeDiv = document.createElement('div');
+    welcomeDiv.classList.add('message', 'ai-message');
+    
+    const iconDiv = document.createElement('div');
+    iconDiv.classList.add('message-icon');
+    iconDiv.innerHTML = '<i class="fas fa-robot"></i>';
+    
+    const contentDiv = document.createElement('div');
+    contentDiv.classList.add('message-content');
+    contentDiv.textContent = welcomeMessage;
+    
+    welcomeDiv.appendChild(iconDiv);
+    welcomeDiv.appendChild(contentDiv);
+    
+    chatMessages.appendChild(welcomeDiv);
     
     const chatId = Date.now();
     const newChat = {
@@ -79,7 +94,72 @@ function initializeNewChat() {
     return chatId;
 }
 
-// Send message function
+// Handle file upload
+fileUpload.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Check file type
+    const fileType = file.name.split('.').pop().toLowerCase();
+    if (!['pdf', 'csv'].includes(fileType)) {
+        alert('Please upload a PDF or CSV file');
+        fileUpload.value = '';
+        return;
+    }
+
+    // Show loading message
+    const loadingDiv = document.createElement('div');
+    loadingDiv.classList.add('message', 'ai-message');
+    loadingDiv.style.color = '#ffd700'; // Light yellow color
+    loadingDiv.textContent = 'Processing file...';
+    chatMessages.appendChild(loadingDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+        const response = await fetch('/upload', {
+            method: 'POST',
+            body: formData
+        });
+
+        // Remove loading message
+        chatMessages.removeChild(loadingDiv);
+
+        const data = await response.json();
+        
+        if (response.ok) {
+            // Show success message
+            const successMessage = 'File processed successfully. You can now ask questions about the content.';
+            const successDiv = document.createElement('div');
+            successDiv.classList.add('message', 'ai-message');
+            successDiv.style.color = '#90EE90'; // Light green color
+            successDiv.textContent = successMessage;
+            chatMessages.appendChild(successDiv);
+        } else {
+            // Show error message
+            const errorMessage = `Error: ${data.error || 'Failed to process file'}`;
+            chatMessages.appendChild(createMessageElement(errorMessage, false));
+        }
+    } catch (error) {
+        // Remove loading message
+        chatMessages.removeChild(loadingDiv);
+        
+        // Show error message
+        const errorMessage = `Error: ${error.message || 'Failed to process file'}`;
+        chatMessages.appendChild(createMessageElement(errorMessage, false));
+        console.error('Error uploading file:', error);
+    }
+
+    // Clear the file input
+    fileUpload.value = '';
+    
+    // Scroll to bottom
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+});
+
+// Modified sendMessage function to handle both regular chat and file-based questions
 async function sendMessage() {
     const message = userInput.value.trim();
     if (!message) return;
@@ -107,47 +187,94 @@ async function sendMessage() {
     // Clear input
     userInput.value = '';
 
+    // Scroll to bottom
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
     try {
         // Show loading message
         const loadingDiv = document.createElement('div');
         loadingDiv.classList.add('message', 'ai-message');
         loadingDiv.textContent = 'Thinking...';
         chatMessages.appendChild(loadingDiv);
+        
+        // Scroll to bottom after adding loading message
+        chatMessages.scrollTop = chatMessages.scrollHeight;
 
-        const response = await fetch('/chat', {
+        let response;
+        let data;
+
+        // Check if a file has been processed
+        try {
+            response = await fetch('/check-file');
+            data = await response.json();
+            
+            if (response.ok && data.has_file) {
+                // Try to get answer from the document
+                response = await fetch('/ask', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ question: message })
+                });
+                data = await response.json();
+                
+                if (response.ok && data.response !== "Please upload a document first.") {
+                    // Remove loading message
+                    chatMessages.removeChild(loadingDiv);
+                    
+                    // Add AI response from document
+                    currentChat.messages.push({ content: data.response, isUser: false });
+                    chatMessages.appendChild(createMessageElement(data.response, false));
+                    
+                    // Save to localStorage
+                    saveChats();
+                    
+                    // Scroll to bottom
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                    return;
+                }
+            }
+        } catch (error) {
+            console.log('No answer from document, falling back to regular chat');
+        }
+
+        // If no document answer or error, use regular chat
+        response = await fetch('/chat', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ 
-                message: message,
-                chatId: currentChatId 
-            })
+            body: JSON.stringify({ message: message })
         });
 
-        const data = await response.json();
+        data = await response.json();
         
         // Remove loading message
         chatMessages.removeChild(loadingDiv);
 
-        // Add AI response
-        if (data.error) {
-            const errorMessage = 'Error: ' + data.error;
-            currentChat.messages.push({ content: errorMessage, isUser: false });
-            chatMessages.appendChild(createMessageElement(errorMessage, false));
-        } else {
+        if (response.ok) {
+            // Add AI response
             currentChat.messages.push({ content: data.response, isUser: false });
             chatMessages.appendChild(createMessageElement(data.response, false));
+        } else {
+            // Show error message
+            const errorMessage = `Error: ${data.error || 'Failed to get answer'}`;
+            currentChat.messages.push({ content: errorMessage, isUser: false });
+            chatMessages.appendChild(createMessageElement(errorMessage, false));
         }
 
         // Save to localStorage
         saveChats();
 
-        // Scroll to bottom
+        // Scroll to bottom after adding response
         chatMessages.scrollTop = chatMessages.scrollHeight;
 
     } catch (error) {
         console.error('Error:', error);
+        const errorMessage = `Error: ${error.message || 'Failed to get answer'}`;
+        currentChat.messages.push({ content: errorMessage, isUser: false });
+        chatMessages.appendChild(createMessageElement(errorMessage, false));
     }
 }
 
@@ -156,7 +283,10 @@ function updateChatHistory() {
     const chatHistory = document.querySelector('.chat-history');
     chatHistory.innerHTML = '';
     
-    chats.forEach(chat => {
+    // Sort chats by ID in descending order (newest first)
+    const sortedChats = [...chats].sort((a, b) => b.id - a.id);
+    
+    sortedChats.forEach(chat => {
         chatHistory.appendChild(createChatHistoryItem(chat));
     });
 }
@@ -424,6 +554,11 @@ function removeFile(index) {
     selectedFiles.splice(index, 1);
     if (selectedFiles.length === 0) {
         document.querySelector('.file-preview').classList.remove('active');
+        // Clear the file input
+        fileUpload.value = '';
+        // Reset the file processing status
+        fetch('/clear-file', { method: 'POST' })
+            .catch(error => console.error('Error clearing file:', error));
     } else {
         handleFileSelect({ target: { files: selectedFiles } });
     }

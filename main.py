@@ -6,11 +6,17 @@ from werkzeug.utils import secure_filename
 import datetime
 import json
 import PyPDF2
+import pandas as pd
 from PIL import Image
 import pytesseract
 import logging
 import socket
 from pathlib import Path
+from flask_cors import CORS
+from file_qa import FileQA
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.pydantic_v1 import BaseModel, Field
+from langchain_openai import ChatOpenAI
 
 # Get the directory containing main.py
 BASE_DIR = Path(__file__).resolve().parent
@@ -45,18 +51,50 @@ load_dotenv(ENV_FILE)
 
 # Initialize Flask app
 app = Flask(__name__)
+CORS(app)
 
 # App configurations
-ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
+ALLOWED_EXTENSIONS = {'pdf', 'csv'}
 MAX_CONTENT_LENGTH = 10 * 1024 * 1024  # 10MB max file size
 
 app.config['UPLOAD_FOLDER'] = str(UPLOADS_DIR)
 app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
 
 # Initialize OpenAI client
+print("Initializing OpenAI client...")
 client = OpenAI(
     api_key=os.getenv("OPENAI_API_KEY"),
 )
+print("OpenAI client initialized successfully")
+
+file_qa = FileQA()
+print("FileQA initialized successfully")
+
+# Data model for question grading
+class QuestionGrade(BaseModel):
+    """Binary score for relevance check on questions."""
+    is_entrepreneurship: str = Field(
+        description="Question is related to entrepreneurship, 'yes' or 'no'"
+    )
+
+# Initialize question grader
+llm = ChatOpenAI(model="gpt-3.5-turbo-0125", temperature=0)
+structured_llm_grader = llm.with_structured_output(QuestionGrade)
+
+# Prompt for question grading
+system = """You are a grader assessing if a question is related to entrepreneurship. 
+The question should be about business, startups, funding, product development, market analysis, 
+team building, growth strategies, or other entrepreneurship-related topics.
+Give a binary score 'yes' or 'no' to indicate whether the question is related to entrepreneurship.
+If the question is about general knowledge, personal advice, or other non-business topics, grade it as 'no'."""
+grade_prompt = ChatPromptTemplate.from_messages(
+    [
+        ("system", system),
+        ("human", "User question: {question}"),
+    ]
+)
+
+question_grader = grade_prompt | structured_llm_grader
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -131,34 +169,100 @@ def log_chat(message, response, files=None):
     logging.info(json.dumps(log_entry))
 
 @app.route('/')
-def home():
+def index():
     return render_template('index.html')
 
 @app.route('/chat', methods=['POST'])
 def chat():
+    data = request.json
+    message = data.get('message')
+    
     try:
-        data = request.json
-        message = data.get('message', '')
+        # Grade the question
+        grade = question_grader.invoke({"question": message})
         
-        # Create chat completion
+        if grade.is_entrepreneurship.lower() != 'yes':
+            return jsonify({"response": "I am a chatbot only for entrepreneurship. I can't answer other topics."})
+        
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
+                {"role": "system", "content": "You are a very helpful assistant. You need to reply ONLY to questions related to entrepreneurship. You MUST NOT reply to other topics. You can use the already uploaded documents for your responses. Use a tone similar to that of Y Combinator. Imagine someone is speaking with you during Y Combinator VC's office hours and asking for advice. Respond like a YC Partner advising YC founders."},
                 {"role": "user", "content": message}
             ]
         )
-
-        # Extract the response
-        ai_response = response.choices[0].message.content
-
-        # Log the chat
-        log_chat(message, ai_response, None)
-
-        return jsonify({"response": ai_response})
+        return jsonify({"response": response.choices[0].message.content})
     except Exception as e:
-        error_message = str(e)
-        logging.error(f"Error in chat endpoint: {error_message}")
-        return jsonify({"error": error_message}), 500
+        print(f"Error: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/upload', methods=['POST'])
+def upload_file():
+    if 'file' not in request.files:
+        return jsonify({"error": "No file provided"}), 400
+    
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({"error": "No file selected"}), 400
+    
+    if not allowed_file(file.filename):
+        return jsonify({"error": "Only PDF and CSV files are supported"}), 400
+    
+    try:
+        # Save the file to uploads folder
+        filename = secure_filename(file.filename)
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(file_path)
+        
+        print("Processing file...")
+        if filename.lower().endswith('.pdf'):
+            file_qa.process_pdf(file_path)
+        else:  # CSV file
+            file_qa.process_csv(file_path)
+        print("File processed successfully")
+        
+        # Delete the file after processing
+        os.remove(file_path)
+        
+        return jsonify({"message": "File processed successfully"})
+    except Exception as e:
+        print(f"Error processing file: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/clear-file', methods=['POST'])
+def clear_file():
+    """Clear the currently processed file."""
+    try:
+        file_qa.clear()
+        return jsonify({"message": "File cleared successfully"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/ask', methods=['POST'])
+def ask_question():
+    data = request.json
+    question = data.get('question')
+    
+    if not question:
+        return jsonify({"error": "No question provided"}), 400
+    
+    try:
+        print("Getting answer for question...")
+        answer = file_qa.get_answer(question)
+        print("Answer generated successfully")
+        return jsonify({"response": answer})
+    except Exception as e:
+        print(f"Error getting answer: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/check-file', methods=['GET'])
+def check_file():
+    """Check if a file has been processed."""
+    try:
+        has_file = file_qa.vectorstore is not None
+        return jsonify({"has_file": has_file})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 def get_ip():
     try:
@@ -181,7 +285,7 @@ if __name__ == '__main__':
     if os.environ.get('WERKZEUG_RUN_MAIN') != 'true':
         print("""
         ╔════════════════════════════════════════════╗
-        ║            ChatGPT Clone Server            ║
+        ║            EntrepreneurGPT Clone Server            ║
         ╚════════════════════════════════════════════╝
         """)
         print(f"""
