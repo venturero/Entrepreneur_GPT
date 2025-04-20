@@ -35,7 +35,7 @@ class FileQA:
                 with open(file_path, 'rb') as pdf_file:
                     images = convert_from_bytes(pdf_file.read())
                     for image in images:
-                        pytesseract.pytesseract.tesseract_cmd = r'C:\\Users\\rvent\\Desktop\\code\\tesseract.exe'
+                        pytesseract.pytesseract.tesseract_cmd = r'C:\\YOURPATH\\tesseract.exe'
                         text += pytesseract.image_to_string(image)
             
             if not text.strip():
