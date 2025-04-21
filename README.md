@@ -1,5 +1,5 @@
 # EntrepreneurGPT
-![image](https://github.com/user-attachments/assets/8e288fd9-9540-47e0-b816-6438e81e836d)
+![image](https://github.com/user-attachments/assets/542841ab-2538-4437-aded-f09656981309)
 
 # EntrepreneurGPT
 
