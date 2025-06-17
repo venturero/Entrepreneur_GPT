@@ -1,3 +1,4 @@
+#mainpy
 from flask import Flask, render_template, request, jsonify
 from dotenv import load_dotenv
 import os
@@ -15,52 +16,43 @@ from pathlib import Path
 from flask_cors import CORS
 from file_qa import FileQA
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.pydantic_v1 import BaseModel, Field
-from langchain_openai import ChatOpenAI
+from pydantic import BaseModel, Field
+#from langchain_core.pydantic_v1 import Field
+from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 
-# Get the directory containing main.py
+
 BASE_DIR = Path(__file__).resolve().parent
 
-# Create necessary directories
 LOGS_DIR = BASE_DIR / 'logs'
 UPLOADS_DIR = BASE_DIR / 'uploads'
 LOGS_DIR.mkdir(exist_ok=True)
 UPLOADS_DIR.mkdir(exist_ok=True)
 
-# Configure logging
 def setup_logging():
-    # Configure logging
     logging.basicConfig(level=logging.INFO)
     
-    # Chat logs handler
     chat_handler = logging.FileHandler(LOGS_DIR / 'chat_logs.log')
     chat_handler.setFormatter(logging.Formatter('%(asctime)s - %(message)s'))
     
-    # Action logs handler
     action_handler = logging.FileHandler(LOGS_DIR / 'action_logs.log')
     action_handler.setFormatter(logging.Formatter('%(asctime)s - %(message)s'))
     
-    # Get logger and add handlers
     logger = logging.getLogger()
     logger.addHandler(chat_handler)
     logger.addHandler(action_handler)
 
-# Load API key from .env file
 ENV_FILE = BASE_DIR / '.env'
 load_dotenv(ENV_FILE)
 
-# Initialize Flask app
 app = Flask(__name__)
 CORS(app)
 
-# App configurations
 ALLOWED_EXTENSIONS = {'pdf', 'csv'}
 MAX_CONTENT_LENGTH = 10 * 1024 * 1024  # 10MB max file size
 
 app.config['UPLOAD_FOLDER'] = str(UPLOADS_DIR)
 app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
 
-# Initialize OpenAI client
 print("Initializing OpenAI client...")
 client = OpenAI(
     api_key=os.getenv("OPENAI_API_KEY"),
@@ -178,7 +170,6 @@ def chat():
     message = data.get('message')
     
     try:
-        # Grade the question
         grade = question_grader.invoke({"question": message})
         
         if grade.is_entrepreneurship.lower() != 'yes':
@@ -209,7 +200,6 @@ def upload_file():
         return jsonify({"error": "Only PDF and CSV files are supported"}), 400
     
     try:
-        # Save the file to uploads folder
         filename = secure_filename(file.filename)
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(file_path)
@@ -217,11 +207,10 @@ def upload_file():
         print("Processing file...")
         if filename.lower().endswith('.pdf'):
             file_qa.process_pdf(file_path)
-        else:  # CSV file
+        elif filename.lower().endswith('.csv'): 
             file_qa.process_csv(file_path)
-        print("File processed successfully")
+        print("File processed finished")
         
-        # Delete the file after processing
         os.remove(file_path)
         
         return jsonify({"message": "File processed successfully"})
